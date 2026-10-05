@@ -20,6 +20,12 @@ The session screen keeps the recording, status and End action; the unavailable i
 
 Only one video element is created at a time. The kiosk uses ordinary muted, looping video playback; it never renders the Unity scene or streams the headset. Preview pause affects only the video. Scene recordings cannot represent live interaction/adaptation, and are explicitly labelled prerecorded.
 
+## Visitor data & iPad app
+
+After the preview, **About you** asks age, gender and a 0–10 stress rating; the session timer runs from Begin to End experience; then the closing question *"How do you feel now after Immersive Smile Plus?"* takes a 0–10 face rating. `session-data.js` records each visit (with location) and uploads it to the Supabase table `kiosk_sessions` (backend `db/09_kiosk_sessions.sql`). It saves locally first and retries silently, so Supabase outages never reach visitors. In a browser it uses localStorage; inside the iPad app ([yoriichi-swift-wrapper](../yoriichi-swift-wrapper)) the native layer stores visits in SQLite and syncs them. Supabase settings are in `kiosk-config.js` (anon key only).
+
+The header has back / forward / home buttons (history-based; the iPad app adds edge swipes), and the gallery pages scroll sideways with snap as well as via Back / More worlds. Faces are drawn as SVG, so no emoji font is needed.
+
 ## Unity recordings
 
 All 16 playable scenes have new, distinct 24-second Unity Play Mode recordings at 960×540, 24 fps, H.264/AAC. Each clip captures the real scene camera and Unity audio mix. The kiosk plays one video at a time; sound is muted until the visitor enables it.
@@ -38,18 +44,9 @@ The tool refuses scene dependencies containing the project's Firebase clients, u
 
 Staff can override any scene's recording with a playable MP4/WebM under 200 MB. Files remain in the kiosk browser's IndexedDB; clearing browser data removes overrides. The generated welcome illustration is concept artwork. Age suggestions remain provisional content guidance, not clinical approval or verified content ratings.
 
-## Remote configuration
+## Headsets
 
-Staff setup takes the API base URL ending in `/api`, a hospital-member bearer token, patient UUID and an online headset. Credentials remain in memory, not localStorage. Configure the backend CORS allowlist for the deployed kiosk origin. The staff panel is configuration UI, not an authentication boundary; the backend must enforce permissions.
-
-- GET `/scenarios`: resolves exact `scene_index` + `unity_scene_name` to backend UUID.
-- GET `/scenarios/headsets`: lists online headsets and polls reported scene every five seconds.
-- POST `/scenario-sessions`: creates and dispatches the selected session.
-- POST `/scenario-sessions/{id}/end`: completes the session and requests lobby return.
-
-The UI distinguishes dispatched commands from reported current scene. A session end response confirms backend completion, not that the headset has rendered its lobby. Network failures retain the active session and permit an end retry. If launch times out, verify the backend portal before doing anything else: a server-side launch may have succeeded. Backend-side idempotency is required for guaranteed duplicate prevention across browser restarts or ambiguous failures. Reloading a remote session loses its in-memory session; a browser warning discourages this. Use the existing staff portal to recover/stop a session after a crash or reload.
-
-No physiological readings, connected stress-ball state, DQN learning or live adaptation are fabricated. This version does not expose that telemetry; the session screen directs staff to the headset for current status.
+No login, API URL or patient ID is needed. Headsets running Immersive Smile register themselves in the Firebase Realtime Database under `/users/{id}` (with a `lastSeen` heartbeat) and follow `/users/{id}/scene`. The kiosk polls `/users.json` every 4 s; a headset is online if it was seen in the last 45 s. Tapping Let's begin writes `{id, name, label, updatedAt}` to that headset's `scene`, and ending writes `MainScene` (id 0) so it returns to its menu. With no headset online, the world plays as a preview on the kiosk screen. Staff setup lists detected headsets and lets staff pin one, or choose "This screen only"; the default is Automatic. The database URL is `firebaseUrl` in `kiosk-config.js`.
 
 ## Validation
 
