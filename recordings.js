@@ -20,8 +20,9 @@ window.KIOSK_RECORDINGS = {
     "poster": "assets/recordings/StarHeart.jpg",
     "simulated": true,
     "audio": true,
-    "seconds": 24,
-    "runtimeErrors": 0
+    "seconds": 118,
+    "runtimeErrors": 0,
+    "previewNote": "Recorded Unity cave-to-starlight excerpt with scene audio and source credits \u00b7 simulated input \u00b7 not a live headset view. Recording precedes the latest reduction in floating lights."
   },
   "ImpossibleGarden_Mochi": {
     "video": "assets/recordings/ImpossibleGarden_Mochi.mp4",
@@ -128,5 +129,35 @@ window.KIOSK_RECORDINGS = {
     "seconds": 24,
     "runtimeErrors": 8,
     "reviewNote": "Recording completed with 8 existing animal outline mesh errors. Review the scene before visitor use."
+  },
+  "SinharajaSanctuary": {
+    "video": "assets/recordings/SinharajaSanctuary.mp4",
+    "poster": "assets/recordings/SinharajaSanctuary.jpg",
+    "simulated": true,
+    "audio": false,
+    "seconds": 84,
+    "previewNote": "Edited 84-second Unity preview of the 2-minute family sequence \u00b7 silent recording \u00b7 simulated squeeze \u00b7 not a live headset view. The headset includes forest and animal audio."
+  },
+  "JustOneBiscuit": {
+    "video": "assets/recordings/JustOneBiscuit.mp4",
+    "poster": "assets/recordings/JustOneBiscuit.jpg",
+    "simulated": false,
+    "audio": true,
+    "seconds": 244,
+    "previewNote": "Complete 4:04 story preview with authored sound \u00b7 not a live headset view."
+  },
+  "Nightfall_Main": {
+    "poster": "assets/recordings/Nightfall_Main.png",
+    "audio": false,
+    "missingNote": "Current Unity still \u00b7 gameplay recording has not been added yet.",
+    "previewNote": "Staged Unity Editor capture of the current palace gallery \u00b7 not a gameplay recording or live headset view."
+  },
+  "Scene_4_Solarland": {
+    "video": "assets/recordings/Scene_4_Solarland.mp4",
+    "poster": "assets/recordings/Scene_4_Solarland.jpg",
+    "simulated": false,
+    "audio": true,
+    "seconds": 111,
+    "previewNote": "Headset recording of the Solarland airship journey \u00b7 boarding, then the voyage \u00b7 not a live headset view."
   }
 };

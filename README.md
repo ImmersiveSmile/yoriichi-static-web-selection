@@ -46,7 +46,11 @@ Staff can override any scene's recording with a playable MP4/WebM under 200 MB. 
 
 ## Headsets
 
-No login, API URL or patient ID is needed. Headsets running Immersive Smile register themselves in the Firebase Realtime Database under `/users/{id}` (with a `lastSeen` heartbeat) and follow `/users/{id}/scene`. The kiosk polls `/users.json` every 4 s; a headset is online if it was seen in the last 45 s. Tapping Let's begin writes `{id, name, label, updatedAt}` to that headset's `scene`, and ending writes `MainScene` (id 0) so it returns to its menu. With no headset online, the world plays as a preview on the kiosk screen. Staff setup lists detected headsets and lets staff pin one, or choose "This screen only"; the default is Automatic. The database URL is `firebaseUrl` in `kiosk-config.js`.
+No login, API URL or patient ID is needed. Headsets running Immersive Smile register themselves in the Firebase Realtime Database under `/users/{id}` (with a `lastSeen` heartbeat) and follow `/users/{id}/scene`. The kiosk polls `/users.json` every 4 s; a headset is online if it was seen in the last 45 s.
+
+After the world preview and **About you**, the visitor must choose on the **Your headset** step: one of the online headsets, or "No headset" to watch the preview on the iPad. Nothing starts until they choose. Let's begin writes `{id, name, label, updatedAt}` to that headset's `scene`, and ending writes `MainScene` (id 0) so it returns to its menu. Staff setup lists the headsets the kiosk can see. The database URL is `firebaseUrl` in `kiosk-config.js`.
+
+The closing question requires a face (0–10) and has an optional comment (`feedback_comment`, backend `db/11_kiosk_feedback_comment.sql`). If a column is missing in Supabase, uploads move that value into `metadata` instead of failing.
 
 ## Validation
 

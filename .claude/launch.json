@@ -6,6 +6,12 @@
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "5173", "--bind", "127.0.0.1"],
       "port": 5173
+    },
+    {
+      "name": "portal-local",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd /Users/nirusan/ISP/yoriichi-frontend && NEXT_PUBLIC_API_BASE_URL=http://localhost:8010 npx next dev -p 3010"],
+      "port": 3010
     }
   ]
 }

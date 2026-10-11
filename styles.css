@@ -10,6 +10,9 @@
 * {
   box-sizing: border-box;
 }
+[hidden] {
+  display: none !important;
+}
 body {
   margin: 0;
   background: #030a17;
@@ -2265,4 +2268,1006 @@ html.native .web-only {
 }
 .question.done #ageInput {
   border-color: #9fd1e7;
+}
+/* Brand: Immersive Smile Plus logo (headset + smile mark) */
+.brand-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  flex: none;
+  box-shadow:
+    0 0 0 1px #7fe8dc3d,
+    0 6px 18px #00c0b12e;
+}
+@media (max-width: 500px) {
+  .brand-logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+  }
+}
+
+/* Bigger, friendlier faces on the stress and closing-smile scales */
+.mood-scale {
+  gap: 10px;
+}
+.mood-scale button {
+  aspect-ratio: 1 / 1.16;
+  padding: 8px 0 6px;
+  border-radius: 20px;
+  gap: 4px;
+}
+.mood-scale .face {
+  width: clamp(38px, 4.4vw, 58px);
+  height: clamp(38px, 4.4vw, 58px);
+  transition: transform 0.18s;
+}
+.mood-scale .num {
+  font-size: 13px;
+}
+.mood-scale button:active {
+  transform: scale(0.95);
+}
+.mood-scale button.selected .face {
+  transform: scale(1.06);
+}
+.feedback-page .mood-scale .face {
+  width: clamp(42px, 5vw, 64px);
+  height: clamp(42px, 5vw, 64px);
+}
+.feel-hero .face {
+  width: 140px;
+  height: 140px;
+}
+
+/* Closing smile: optional comment */
+.feedback-note {
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  margin: 26px auto 0;
+  text-align: left;
+  font-size: 14px;
+  color: #c4d6e6;
+}
+.feedback-note em {
+  font-style: normal;
+  font-size: 12px;
+  color: #7f9bb5;
+  margin-left: 6px;
+}
+.feedback-note textarea {
+  display: block;
+  width: 100%;
+  min-height: 84px;
+  margin-top: 8px;
+  padding: 14px 16px;
+  resize: none;
+  border-radius: 16px;
+  background: #061329cc;
+  border: 1px solid #54718d;
+  color: #f0f7ff;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.feedback-note textarea:focus {
+  outline: 0;
+  border-color: #9fd1e7;
+  box-shadow: 0 0 0 3px #9fd1e733;
+}
+.feedback-actions .small-note {
+  margin: 6px 0 0;
+}
+html.native textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Headset step */
+.headset-page {
+  max-width: 1100px;
+  margin: auto;
+  padding-bottom: 16px;
+}
+.headset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.headset-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-height: 160px;
+  padding: 22px;
+  text-align: left;
+  border-radius: 24px;
+  background: linear-gradient(160deg, #10263fd9, #0a192cd9);
+  border: 1px solid var(--line);
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s,
+    transform 0.15s;
+}
+.headset-card:active {
+  transform: scale(0.98);
+}
+.headset-card .vr-icon {
+  width: 54px;
+  height: 36px;
+  margin-bottom: 10px;
+  color: #8fe6dc;
+}
+.headset-card strong {
+  font-size: 19px;
+  font-weight: 500;
+  color: #eef7fc;
+}
+.headset-card small {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: #93abc3;
+}
+.headset-card .check {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #8fe6dc;
+  color: #08302f;
+  font-size: 15px;
+  font-weight: 700;
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+.headset-card.selected {
+  border-color: #8fe6dc;
+  background: linear-gradient(160deg, #124650, #0c2638);
+  box-shadow:
+    inset 0 0 0 1px #8fe6dc,
+    0 12px 30px #00c0b126;
+}
+.headset-card.selected .check {
+  opacity: 1;
+  transform: none;
+}
+.preview-card .vr-icon {
+  color: #a9bdd2;
+}
+.headset-empty {
+  grid-column: span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 160px;
+  padding: 22px;
+  text-align: center;
+  border: 1px dashed #7cabce55;
+  border-radius: 24px;
+  color: #93abc3;
+}
+.headset-empty strong {
+  font-weight: 500;
+  color: #dbe9f3;
+}
+.headset-empty small {
+  font-size: 13px;
+  max-width: 320px;
+}
+.scan {
+  width: 18px;
+  height: 18px;
+  margin-bottom: 8px;
+  border-radius: 50%;
+  background: #8fe6dc;
+  animation: scan 1.8s ease-out infinite;
+}
+@keyframes scan {
+  0% {
+    box-shadow: 0 0 0 0 #8fe6dc99;
+  }
+  100% {
+    box-shadow: 0 0 0 22px #8fe6dc00;
+  }
+}
+@media (max-width: 700px) {
+  .headset-empty {
+    grid-column: auto;
+  }
+  .mood-scale .face {
+    width: 40px;
+    height: 40px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scan {
+    animation: none;
+  }
+}
+
+/* Landscape iPads: keep the closing question, faces, note and Send on one screen */
+@media (max-height: 900px) and (orientation: landscape) {
+  .feedback-page {
+    min-height: 0;
+    padding-top: 4px;
+    padding-bottom: 24px;
+  }
+  .feedback-page h1 {
+    font-size: clamp(30px, 3.6vw, 44px);
+    max-width: 1000px;
+  }
+  .feel-hero {
+    min-height: 0;
+    gap: 4px;
+    margin: 6px 0 14px;
+  }
+  .feel-hero .face {
+    width: 96px;
+    height: 96px;
+  }
+  .feel-hero strong {
+    font-size: 26px;
+  }
+  .feedback-note {
+    margin-top: 14px;
+  }
+  .feedback-note textarea {
+    min-height: 58px;
+  }
+  .feedback-actions {
+    margin-top: 14px;
+  }
+  .feedback-page .mood-scale button {
+    aspect-ratio: 1 / 1.08;
+  }
+}
+
+/* Landscape iPads: all three intake questions above the Continue bar */
+@media (max-height: 900px) and (orientation: landscape) {
+  .intake .preview-nav,
+  .headset-page .preview-nav {
+    margin-bottom: 10px;
+  }
+  .intake-head {
+    margin-bottom: 12px;
+  }
+  .intake-head h1 {
+    font-size: clamp(30px, 3.2vw, 40px);
+    margin-bottom: 4px;
+  }
+  .intake-grid {
+    gap: 12px;
+  }
+  .question {
+    padding: 16px 20px 18px;
+  }
+  .q-label {
+    margin-bottom: 12px;
+  }
+  .q-head {
+    margin-bottom: 10px;
+    min-height: 46px;
+  }
+  .age-entry {
+    margin-bottom: 8px;
+  }
+  .age-step {
+    width: 50px;
+    height: 50px;
+  }
+  #ageInput {
+    height: 54px;
+  }
+  .age-strip button {
+    width: 52px;
+    height: 52px;
+  }
+  .intake .choice-row button {
+    min-height: 56px;
+  }
+  .intake .mood-scale button {
+    aspect-ratio: 1 / 0.94;
+  }
+}
+
+/* Landscape iPads: full-bleed artwork and the countdown on screen for the thank-you page */
+@media (orientation: landscape) and (min-width: 900px) {
+  .attract {
+    min-height: calc(100dvh - 140px);
+  }
+  .attract:before {
+    background:
+      linear-gradient(#06132940, #06132900 35%, #061329d9 92%),
+      url("assets/welcome.png") center 58% / cover no-repeat;
+  }
+  .attract .welcome-bottom {
+    padding-top: 24px;
+  }
+}
+
+/* Scene-specific guidance and the existing Nightfall headset transport. */
+.scene-guide { padding: 22px 0; text-align: left; }
+.scene-guide h3 { margin: 8px 0 14px; font-size: 1.3rem; }
+.scene-guide ul { padding-left: 22px; margin: 0; }
+.scene-guide li { line-height: 1.65; margin: 9px 0; }
+.guide-duration { font-weight: 600; color: #b8e4d5; }
+.interaction .scene-guide { padding: 0; }
+.nightfall-controls { margin: 24px 0; padding: 24px; border: 1px solid #426077; background: #112536; border-radius: 20px; }
+.nightfall-controls fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.nightfall-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin: 22px 0; }
+.nightfall-options label { line-height: 1.6; }
+.nightfall-options input[type=checkbox] { display: inline-block; width: 22px; height: 22px; vertical-align: middle; margin-right: 8px; }
+.nightfall-options select { display: block; width: 100%; margin-top: 8px; padding: 12px; background: #091a29; color: white; border: 1px solid #658094; border-radius: 8px; font: inherit; }
+.nightfall-controls .nightfall-stop, .nightfall-controls .nightfall-stop:hover { width: 100%; min-height: 54px; border-radius: 12px; background: #903e46; color: white; font-size: 19px; font-weight: 600; }
+#nfError { color: #ffd0bc; }
+@media (max-width: 650px) { .nightfall-options { grid-template-columns: 1fr; } }
+
+.card.preview-pending { background: linear-gradient(155deg, #567887, #344a66 45%, #182536); }
+
+.ball-settings fieldset { border:0; padding:0; margin:0; min-width:0; }
+.ball-settings [data-ball="error"] { color:#ffd0bc; }
+.ball-session { border:1px solid #426077; border-radius:16px; padding:18px 24px; margin:20px 0; }
+.ball-session summary { cursor:pointer; min-height:28px; font-weight:600; }
+
+/* Phones (Android app, small tablets): compact versions of every screen */
+@media (max-width: 500px) {
+  header {
+    height: 64px;
+  }
+  .brand-logo {
+    width: 34px;
+    height: 34px;
+  }
+
+  /* Gallery: short intro, one scrolling row of filters, tighter cards */
+  .discovery {
+    padding-top: 6px;
+  }
+  .discovery-intro {
+    margin-bottom: 14px;
+  }
+  .discovery-intro .eyebrow {
+    display: none;
+  }
+  .discovery-intro h1 {
+    font-size: 31px;
+    letter-spacing: -1px;
+    margin-bottom: 6px;
+  }
+  .discovery-intro p:last-child {
+    font-size: 14px;
+  }
+  .browse-tools {
+    margin-bottom: 12px;
+  }
+  .browse-tools .filters {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0 -20px 6px;
+    padding: 0 20px;
+  }
+  .browse-tools .filters::-webkit-scrollbar {
+    display: none;
+  }
+  .browse-tools .filters button {
+    flex: none;
+    min-height: 42px;
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+  .browse-tools > .text-button {
+    float: none;
+    min-height: 34px;
+  }
+  .section-label {
+    margin-bottom: 10px;
+  }
+  .section-label span:last-child {
+    display: none;
+  }
+  .card {
+    min-height: 214px;
+  }
+  .card h3 {
+    font-size: 21px;
+    line-height: 1.12;
+  }
+  .card .description {
+    min-height: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .card-bottom {
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+  .gallery-nav {
+    margin-top: 16px;
+  }
+  .gallery-nav > button {
+    min-height: 48px;
+  }
+
+  /* About you + headset steps */
+  .intake .preview-nav .back,
+  .headset-page .preview-nav .back {
+    min-height: 42px;
+    padding: 6px 14px;
+    font-size: 13px;
+  }
+  .intake-head {
+    margin-bottom: 12px;
+  }
+  .intake-head h1 {
+    font-size: 28px;
+    margin-bottom: 4px;
+  }
+  .intake .intake-head p {
+    display: none;
+  }
+  .headset-page .intake-head p {
+    font-size: 13px;
+  }
+  .intake-grid {
+    gap: 10px;
+  }
+  .question {
+    padding: 14px 14px 16px;
+    border-radius: 20px;
+  }
+  .q-label {
+    font-size: 15px;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .q-head {
+    margin-bottom: 8px;
+  }
+  .age-entry {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .age-step {
+    width: 46px;
+    height: 46px;
+  }
+  #ageInput {
+    height: 50px;
+    font-size: 26px;
+  }
+  /* Phones: type the age or use − / +; the tap-an-age row is for tablets */
+  .age-strip {
+    display: none;
+  }
+  .age-entry {
+    margin-bottom: 0;
+  }
+  .intake .choice-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .intake .choice-row button {
+    min-height: 46px;
+    font-size: 14px;
+    border-radius: 14px;
+  }
+  .headset-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .headset-card {
+    min-height: 118px;
+    padding: 14px;
+    border-radius: 18px;
+  }
+  .headset-card .vr-icon {
+    width: 40px;
+    height: 28px;
+    margin-bottom: 4px;
+  }
+  .headset-card strong {
+    font-size: 16px;
+  }
+  .headset-card small {
+    font-size: 12px;
+  }
+  .headset-card .check {
+    top: 10px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+  .headset-empty {
+    grid-column: 1 / -1;
+    min-height: 110px;
+  }
+
+  /* 0–10 faces: two centred rows (6 + 5) that stay big enough to tap */
+  .mood-scale {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  .mood-scale button {
+    flex: 0 0 calc((100% - 40px) / 6);
+    aspect-ratio: 1 / 1.12;
+    border-radius: 16px;
+  }
+  .mood-scale .face {
+    width: 34px;
+    height: 34px;
+  }
+  .scale-ends {
+    display: none;
+  }
+
+  /* Bottom bar */
+  .start-dock {
+    width: calc(100vw - 32px);
+    padding: 10px 0 max(10px, env(safe-area-inset-bottom));
+  }
+  .start-dock .primary {
+    min-height: 54px;
+  }
+  .shell:has(.start-dock) {
+    padding-bottom: 84px;
+  }
+
+  /* Session */
+  .session-title {
+    margin: 4px 0 14px;
+  }
+  .session-title h1 {
+    font-size: 30px;
+  }
+  .media-controls button {
+    min-height: 42px;
+    padding: 6px 12px;
+  }
+  .status-list {
+    padding: 12px 16px;
+    margin: 14px 0;
+  }
+
+  /* Closing smile */
+  .feedback-page {
+    min-height: 0;
+    padding: 8px 16px 24px;
+  }
+  .feedback-page h1 {
+    font-size: 27px;
+  }
+  .feel-hero {
+    min-height: 0;
+    gap: 4px;
+    margin: 8px 0 12px;
+  }
+  .feel-hero .face {
+    width: 76px;
+    height: 76px;
+  }
+  .feel-hero strong {
+    font-size: 22px;
+  }
+  .feedback-page .mood-scale .face {
+    width: 38px;
+    height: 38px;
+  }
+  .feedback-note {
+    margin-top: 14px;
+  }
+  .feedback-note textarea {
+    min-height: 64px;
+  }
+  .feedback-actions {
+    margin-top: 14px;
+  }
+  .feedback-actions .primary {
+    min-height: 56px;
+  }
+
+  /* Thank-you + staff dialog */
+  .attract h1 {
+    font-size: 26px;
+    letter-spacing: 4px;
+  }
+  dialog {
+    padding: 22px 18px;
+  }
+}
+
+/* Android app on phones only (html.android is never set in the iPad app or a browser) */
+@media (max-width: 600px) {
+  html.android header {
+    height: 58px;
+    padding-top: 10px;
+    padding-bottom: 6px;
+  }
+  html.android .brand {
+    gap: 10px;
+    font-size: 10px;
+    letter-spacing: 2px;
+  }
+  html.android .brand-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+  }
+  html.android .history-nav {
+    padding: 2px;
+  }
+  html.android .history-nav button {
+    width: 38px;
+    min-height: 38px;
+  }
+  html.android .history-nav button svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Preview: slim pill buttons, one swipeable row of tags + preview controls */
+  html.android .preview-nav {
+    margin-bottom: 12px;
+  }
+  html.android .preview-nav .back {
+    min-height: 38px;
+    padding: 6px 14px;
+    font-size: 13px;
+    border-radius: 20px;
+  }
+  html.android .preview-stage {
+    border-radius: 22px;
+  }
+  html.android .preview-caption {
+    padding: 16px 18px 18px;
+  }
+  html.android .preview-caption h1 {
+    font-size: 28px;
+    margin: 4px 0 6px;
+  }
+  html.android .preview-under {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 12px -20px;
+    padding: 0 20px;
+  }
+  html.android .preview-under::-webkit-scrollbar {
+    display: none;
+  }
+  html.android .preview-under .tags,
+  html.android .preview-under .media-controls {
+    flex-wrap: nowrap;
+    flex: none;
+  }
+  html.android .preview-under .tag,
+  html.android .preview-under .media-controls button {
+    white-space: nowrap;
+    min-height: 36px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  /* Bottom bars float over a soft fade instead of a hard line */
+  html.android .start-dock {
+    border-top: 0;
+    background: linear-gradient(180deg, #07132200, #071322 34%);
+    box-shadow: none;
+    padding-top: 22px;
+  }
+  html.android .start-dock .primary {
+    border-radius: 18px;
+    box-shadow: 0 10px 28px #517ade3d;
+  }
+
+  /* Session: End experience stays within reach while scrolling */
+  html.android .session-title {
+    margin: 0 0 12px;
+  }
+  html.android .session-title h1 {
+    font-size: 28px;
+    margin-bottom: 6px;
+  }
+  html.android .status-list {
+    border-radius: 18px;
+  }
+  html.android .status-row {
+    padding: 7px 0;
+  }
+  html.android .actions:has(#end) {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+    margin: 0 -20px;
+    padding: 20px 20px max(14px, env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, #07132200, #071322 38%);
+  }
+  html.android #end {
+    min-height: 56px;
+    border-radius: 18px;
+  }
+
+  /* Thank-you: comfortable on a narrow screen */
+  html.android .attract {
+    padding: 4vh 20px 28px;
+  }
+  html.android .attract .welcome-bottom {
+    padding-top: 30vh;
+  }
+}
+
+/* Fixed-headset sites: holding screen until the headset comes online */
+.waiting-page {
+  max-width: 1100px;
+  margin: auto;
+}
+.waiting-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  margin: 6vh auto 0;
+  max-width: 760px;
+  padding: 14px 14px 26px;
+  border-radius: 28px;
+  border: 1px solid var(--line);
+  background: linear-gradient(160deg, #10263fd9, #0a192cd9);
+}
+.waiting-card h1 {
+  font-size: clamp(30px, 4vw, 44px);
+  margin: 10px 0 0;
+}
+.waiting-card h1 em {
+  color: #b5dcf0;
+}
+.waiting-card p {
+  margin: 0;
+  font-size: 15px;
+}
+.waiting-pulse {
+  width: 96px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #8fe6dc;
+  background: #0f3a40;
+  animation: scan 1.8s ease-out infinite;
+}
+.waiting-pulse .vr-icon {
+  width: 52px;
+  height: 36px;
+}
+.wear-video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 20px;
+  background: #0b1622;
+  margin-bottom: 6px;
+}
+.waiting-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.waiting-status .headset-dot {
+  background: #f0b45a;
+  box-shadow: 0 0 10px #f0b45a99;
+}
+@media (prefers-reduced-motion: reduce) {
+  .waiting-pulse {
+    animation: none;
+  }
+}
+
+/* Staff sign-in: the kiosk works for one hospital (and branch) at a time */
+.signin {
+  min-height: calc(100dvh - 170px);
+  display: grid;
+  place-items: center;
+  padding: 4vh 20px;
+}
+.signin-card {
+  width: min(520px, 100%);
+  padding: 34px 34px 30px;
+  border-radius: 28px;
+  border: 1px solid var(--line);
+  background: linear-gradient(160deg, #10263fe6, #0a192ce6);
+  box-shadow: 0 30px 80px #0008;
+}
+.signin-logo {
+  display: block;
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  margin-bottom: 18px;
+}
+.signin-card h1 {
+  font-size: clamp(32px, 4.4vw, 44px);
+  margin-bottom: 12px;
+}
+.signin-card h1 em {
+  color: #b5dcf0;
+}
+.signin-card > p {
+  font-size: 15px;
+}
+.signin-card form .primary {
+  width: 100%;
+  margin-top: 8px;
+}
+.signin-card input {
+  min-height: 52px;
+  font-size: 17px;
+}
+.password-field {
+  position: relative;
+  display: block;
+}
+.password-field input {
+  padding-right: 78px;
+}
+.password-field .text-button {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(calc(-50% + 3px));
+  min-height: 40px;
+  text-decoration: none;
+  font-size: 13px;
+}
+.signin-server {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #061329;
+  border: 1px solid #54718d55;
+  font-size: 13px;
+  color: #93abc3;
+}
+.signin-server strong {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: #dbeaf6;
+}
+.signin-server .text-button {
+  min-height: 32px;
+}
+.signin-error {
+  margin: 4px 0 14px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #4a1622;
+  border: 1px solid #ff8a9a55;
+  color: #ffd2d8;
+  font-size: 14px;
+}
+body.signed-out .history-nav,
+body.signed-out #setup {
+  visibility: hidden;
+}
+
+/* Staff panel: which hospital this kiosk is signed in to */
+.account-box {
+  margin: 4px 0 22px;
+}
+.account-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #0a1b30;
+  border: 1px solid var(--line);
+}
+.account-row img {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  object-fit: contain;
+  background: #fff;
+  flex: none;
+}
+.account-row strong {
+  display: block;
+  font-weight: 600;
+  color: #e8f4fb;
+}
+.account-row small {
+  color: #93abc3;
+  font-size: 13px;
+}
+.secondary.danger {
+  color: #ffc2cb;
+  border-color: #ff8a9a66;
+}
+
+/* Headset battery, as the headset reports it */
+.battery {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #8ff0bd;
+  white-space: nowrap;
+}
+.battery.mid {
+  color: #ffd27a;
+}
+.battery.low {
+  color: #ff9aa8;
+}
+.battery-shell {
+  position: relative;
+  width: 22px;
+  height: 11px;
+  padding: 1.5px;
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+}
+.battery-shell::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  top: 2.5px;
+  width: 2px;
+  height: 4px;
+  border-radius: 0 1px 1px 0;
+  background: currentColor;
+}
+.battery-shell span {
+  display: block;
+  height: 100%;
+  border-radius: 1px;
+  background: currentColor;
+}
+.headset-option .battery {
+  margin-left: auto;
+}
+.pill .battery.in-pill {
+  font-size: 11px;
+  letter-spacing: 0;
+}
+.headset-card.offline {
+  opacity: 0.55;
+}
+.headset-card.offline .vr-icon {
+  color: #6b8197;
 }

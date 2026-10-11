@@ -8,13 +8,15 @@
     />
     <meta name="theme-color" content="#061329" />
     <title>Immersive Smile · Your world, your moment</title>
+    <link rel="icon" type="image/png" href="assets/brand/favicon.png" />
+    <link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="shell">
       <header>
         <button class="brand" id="home" aria-label="Immersive Smile home">
-          <span class="mark"></span><span>IMMERSIVE SMILE</span>
+          <img class="brand-logo" src="assets/brand/mark.png" alt="" width="44" height="44" /><span>IMMERSIVE SMILE</span>
         </button>
         <div class="header-actions">
           <nav class="history-nav" aria-label="Screen history">
@@ -57,7 +59,7 @@
               ><span>Home</span>
             </button>
           </nav>
-          <button id="connection" class="pill">○ Preview mode</button>
+          <button id="connection" class="pill">○ Starting…</button>
         </div>
       </header>
       <main id="app"></main>
@@ -76,36 +78,35 @@
         </button>
         <p class="eyebrow">STAFF CONTROLS</p>
         <h2>Kiosk settings</h2>
+        <div id="accountBox" class="account-box"></div>
         <h3>VR headsets</h3>
         <p>
-          Headsets running Immersive Smile show up here on their own. When a
-          visitor taps Let’s begin, their world opens on the selected headset.
+          The headsets assigned to this kiosk in the admin portal. With one
+          headset, each visitor’s world starts on it automatically; with
+          several, visitors choose the one they’re wearing.
         </p>
         <div
           id="headsetList"
           class="headset-list"
-          role="radiogroup"
-          aria-label="Headset for this kiosk"
+          aria-label="Headsets seen by this kiosk"
         ></div>
+        <hr />
+        <h3>Stress-ball defaults</h3>
+        <label>Headset<select id="ballHeadset"><option value="">Choose a headset</option></select></label>
+        <div id="ballStaffControls"><p>Choose a headset to adjust its stress-ball defaults.</p></div>
         <hr />
         <h3>Visit data</h3>
         <p>
           Visitor answers, session length, location and the closing smile are
-          saved on this kiosk first, then uploaded automatically.
+          saved on this kiosk first, then uploaded to your hospital’s
+          dashboard automatically.
         </p>
         <p id="syncStatus" class="sync-status" role="status">Checking…</p>
-        <label
-          >Clinic or site name<input
-            id="clinic"
-            maxlength="80"
-            autocomplete="off"
-            placeholder="e.g. Smile Dental · Colombo 07"
-        /></label>
         <div class="actions">
-          <button type="button" id="saveClinic" class="secondary">
-            Save name</button
-          ><button type="button" id="syncNow" class="secondary">
-            Upload now
+          <button type="button" id="syncNow" class="secondary">
+            Upload now</button
+          ><button type="button" id="signOut" class="secondary danger">
+            Sign out of this kiosk
           </button>
         </div>
         <div class="web-only">
@@ -160,10 +161,22 @@
         ><button id="confirmStop" class="primary">End experience</button>
       </div>
     </dialog>
+    <dialog id="signOutDialog">
+      <h2>Sign out of this kiosk?</h2>
+      <p id="signOutNote"></p>
+      <div class="actions">
+        <button class="secondary close">Stay signed in</button
+        ><button id="confirmSignOut" class="primary">Sign out</button>
+      </div>
+    </dialog>
     <div id="toast" role="status"></div>
     <script src="kiosk-config.js" defer></script>
+    <script src="kiosk-account.js" defer></script>
     <script src="session-data.js" defer></script>
     <script src="recordings.js" defer></script>
+    <script src="scene-guides.js" defer></script>
+    <script src="nightfall-controls.js" defer></script>
+    <script src="stress-ball-controls.js" defer></script>
     <script src="app.js" defer></script>
   </body>
 </html>

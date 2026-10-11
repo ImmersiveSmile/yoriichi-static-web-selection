@@ -1,15 +1,19 @@
 'use strict';
 // Visit records: intake answers, session timing and the closing smile.
 // Every change is saved on the device first and uploaded later, so a slow,
-// paused or unreachable Supabase never interrupts a visitor. Nothing here
+// paused or unreachable server never interrupts a visitor. Nothing here
 // throws or shows errors — failures only leave records waiting in the queue.
-// Inside the iPad app the native layer (SQLite + background sync) owns storage;
-// in a plain browser localStorage is used instead.
+// Visits go to the hospital the kiosk is signed in to (POST /api/kiosk/visits),
+// and each one stays with the staff account it was recorded under.
+// Inside the iPad / Android app the native layer (SQLite + background sync) owns
+// storage and upload; in a plain browser localStorage is used instead.
 window.KioskData = (() => {
-  const cfg = window.KIOSK_CONFIG || {};
-  const bridge = window.__IMMERSIVE_SMILE_NATIVE__ && window.webkit?.messageHandlers?.kiosk;
-  const DRAFT = 'is.visit.draft', QUEUE = 'is.visit.queue', CLINIC = 'is.visit.clinic', DEVICE = 'is.visit.device', LAST = 'is.visit.lastSync';
-  let draft = null, clock = 0, syncing = false;
+  // iPad app: WKScriptMessageHandler (returns a promise). Android app: @JavascriptInterface (returns JSON text).
+  const android = window.AndroidKiosk && { postMessage: m => Promise.resolve(JSON.parse(window.AndroidKiosk.post(JSON.stringify(m)) || 'null')) };
+  const bridge = (window.__IMMERSIVE_SMILE_NATIVE__ && window.webkit?.messageHandlers?.kiosk) || android;
+  const account = () => window.KioskAccount?.state || {};
+  const DRAFT = 'is.visit.draft', QUEUE = 'is.visit.queue', DEVICE = 'is.visit.device', LAST = 'is.visit.lastSync';
+  let draft = null, clock = 0, syncing = false, lastError = null;
 
   const uuid = () => { try { if (crypto.randomUUID) return crypto.randomUUID() } catch (e) {} return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)) };
   const read = (key, fallback) => { try { const v = localStorage.getItem(key); return v == null ? fallback : JSON.parse(v) } catch (e) { return fallback } };
@@ -23,9 +27,8 @@ window.KioskData = (() => {
 
   function enqueue(record) {
     if (bridge) { post({ type: 'finish', record }); return }
-    const clinic = read(CLINIC, '');
     const queue = read(QUEUE, []);
-    queue.push({ ...record, clinic_code: clinic || null, device_id: deviceId(), platform: 'web', recorded_at: new Date().toISOString() });
+    queue.push({ ...record, owner: record.owner || account().userId || null, device_id: deviceId(), platform: 'web', recorded_at: new Date().toISOString() });
     write(QUEUE, queue); write(DRAFT, null); flush();
   }
 
@@ -43,18 +46,23 @@ window.KioskData = (() => {
     } catch (e) {}
   }
 
+  // Uploads this account's waiting visits. Visits recorded under another
+  // account wait until that account signs this kiosk in again.
   async function flush() {
-    if (bridge || syncing || !cfg.supabaseUrl || !cfg.supabaseAnonKey || navigator.onLine === false) return;
+    const me = account();
+    if (bridge || syncing || !me.signedIn || !me.userId || navigator.onLine === false) return;
     syncing = true;
     try {
-      for (const row of read(QUEUE, [])) {
-        const res = await fetch(`${cfg.supabaseUrl}/rest/v1/${cfg.table || 'kiosk_sessions'}`, {
-          method: 'POST',
-          headers: { apikey: cfg.supabaseAnonKey, Authorization: `Bearer ${cfg.supabaseAnonKey}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-          body: JSON.stringify(row), signal: AbortSignal.timeout?.(15000)
-        });
-        if (!res.ok && res.status !== 409) continue; // keep it for the next pass; 409 = already uploaded earlier
-        write(QUEUE, read(QUEUE, []).filter(r => r.client_id !== row.client_id)); write(LAST, Date.now());
+      for (const queued of read(QUEUE, [])) {
+        if (queued.owner && queued.owner !== me.userId) continue;
+        const { owner, ...row } = queued;
+        const res = await window.KioskAccount.uploadVisit(row);
+        if (!res.ok) {
+          if (res.status === 0 || res.status === 401 || res.status === 403 || res.status >= 500) break; // offline / signed out / server down: try later
+          if (res.status !== 409) { lastError = res.error; continue }
+        }
+        lastError = null;
+        write(QUEUE, read(QUEUE, []).filter(r => r.client_id !== queued.client_id)); write(LAST, Date.now());
       }
     } catch (e) {} finally { syncing = false }
   }
@@ -69,26 +77,28 @@ window.KioskData = (() => {
 
   addEventListener('online', flush);
   setInterval(() => { if (!bridge && read(QUEUE, []).length) flush() }, 60000);
-  recover();
+  window.KioskAccount?.onChange(s => { if (s.signedIn) flush() });
+  window.KioskAccount?.ready.then(recover);
 
   return {
     native: !!bridge,
     active: () => !!draft,
     current: () => draft,
     begin({ age, gender, stress, scene, mode, headset }) {
-      draft = { client_id: uuid(), age, gender, initial_stress: stress, scene_index: scene.id, scene_name: scene.name, scene_label: scene.label, mode, metadata: headset ? { headset_id: headset.id, headset_name: headset.name } : {}, started_at: new Date().toISOString(), ended_at: null, duration_seconds: 0, feedback_score: null, feedback_at: null, completion_status: null };
+      draft = { client_id: uuid(), owner: account().userId || null, age, gender, initial_stress: stress, scene_index: scene.id, scene_name: scene.name, scene_label: scene.label, mode, metadata: headset ? { headset_id: headset.key, headset_name: headset.name, vr_device_id: headset.id } : {}, started_at: new Date().toISOString(), ended_at: null, duration_seconds: 0, feedback_score: null, feedback_at: null, completion_status: null };
       clock = Date.now(); save(); locate();
     },
     // Called while a world plays so a crash still leaves a usable duration.
     heartbeat() { if (!draft || draft.feedback_at || draft.completion_status) return; draft.duration_seconds = seconds(); draft.ended_at = new Date().toISOString(); save() },
     end() { if (!draft) return; draft.duration_seconds = seconds(); draft.ended_at = new Date().toISOString(); draft.completion_status = 'no_feedback'; save() },
-    feedback(score) { if (!draft) return; draft.feedback_score = score; draft.feedback_at = new Date().toISOString(); draft.completion_status = 'completed'; save() },
+    feedback(score, comment) { if (!draft) return; draft.feedback_score = score; draft.feedback_comment = comment || null; draft.feedback_at = new Date().toISOString(); draft.completion_status = 'completed'; save() },
     finish() { if (!draft) return; const record = { ...draft, completion_status: draft.completion_status || 'no_feedback' }; draft = null; enqueue(record) },
     async status() {
       if (bridge) return (await post({ type: 'status' })) || {};
-      return { pending: read(QUEUE, []).length, lastSyncAt: read(LAST), clinicCode: read(CLINIC, ''), deviceId: deviceId(), online: navigator.onLine };
+      const me = account().userId, queue = read(QUEUE, []);
+      const mine = queue.filter(r => !r.owner || r.owner === me).length;
+      return { pending: mine, otherPending: queue.length - mine, lastSyncAt: read(LAST), lastError, deviceId: deviceId(), online: navigator.onLine };
     },
-    async syncNow() { if (bridge) await post({ type: 'syncNow' }); else await flush() },
-    async setClinic(value) { const v = String(value || '').trim().slice(0, 80); if (bridge) await post({ type: 'setClinic', value: v }); else write(CLINIC, v) }
+    async syncNow() { if (bridge) await post({ type: 'syncNow' }); else await flush() }
   };
 })();
