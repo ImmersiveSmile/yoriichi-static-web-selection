@@ -3,7 +3,7 @@
 // Every change is saved on the device first and uploaded later, so a slow,
 // paused or unreachable server never interrupts a visitor. Nothing here
 // throws or shows errors — failures only leave records waiting in the queue.
-// Visits go to the hospital the kiosk is signed in to (POST /api/kiosk/visits),
+// Visits go to the hospital the app is signed in to (Supabase app_record_visit),
 // and each one stays with the staff account it was recorded under.
 // Inside the iPad / Android app the native layer (SQLite + background sync) owns
 // storage and upload; in a plain browser localStorage is used instead.
@@ -57,9 +57,9 @@ window.KioskData = (() => {
         if (queued.owner && queued.owner !== me.userId) continue;
         const { owner, ...row } = queued;
         const res = await window.KioskAccount.uploadVisit(row);
-        if (!res.ok) {
-          if (res.status === 0 || res.status === 401 || res.status === 403 || res.status >= 500) break; // offline / signed out / server down: try later
-          if (res.status !== 409) { lastError = res.error; continue }
+        if (!res?.ok) {
+          if (!res || res.offline || res.code === 'signed_out') break; // offline or sign-in removed: keep everything, try later
+          lastError = res.error; continue; // this one visit was refused; the rest still upload
         }
         lastError = null;
         write(QUEUE, read(QUEUE, []).filter(r => r.client_id !== queued.client_id)); write(LAST, Date.now());

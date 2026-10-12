@@ -3087,7 +3087,7 @@ html.native textarea {
   }
 }
 
-/* Staff sign-in: the kiosk works for one hospital (and branch) at a time */
+/* Staff sign-in: the app works for one hospital (and branch) at a time */
 .signin {
   min-height: calc(100dvh - 170px);
   display: grid;
@@ -3143,30 +3143,6 @@ html.native textarea {
   text-decoration: none;
   font-size: 13px;
 }
-.signin-server {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 4px 0 14px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  background: #061329;
-  border: 1px solid #54718d55;
-  font-size: 13px;
-  color: #93abc3;
-}
-.signin-server strong {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 500;
-  color: #dbeaf6;
-}
-.signin-server .text-button {
-  min-height: 32px;
-}
 .signin-error {
   margin: 4px 0 14px;
   padding: 10px 14px;
@@ -3181,7 +3157,7 @@ body.signed-out #setup {
   visibility: hidden;
 }
 
-/* Staff panel: which hospital this kiosk is signed in to */
+/* Staff panel: which hospital this app is signed in to */
 .account-box {
   margin: 4px 0 22px;
 }

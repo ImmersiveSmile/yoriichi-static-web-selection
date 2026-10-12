@@ -280,7 +280,7 @@ function toast(message) {
   setTimeout(() => ($("toast").style.display = "none"), 5000);
 }
 // VR headsets come from the backend: the admin portal assigns them to this
-// kiosk's hospital (and branch). Their live state — online, battery, current
+// app's hospital (and branch). Their live state — online, battery, current
 // scene — is read from the Firebase bridge they report to, and scenes are sent
 // there. One headset → the visitor goes straight in; several → they choose.
 // Loop length sent with every scene (SceneSelector.cs maxSegments): 1 = 30 s, 2 = 1 min, 3 = 1:30.
@@ -424,12 +424,14 @@ function ago(ms) {
         ? `${Math.round(m / 60)} h ago`
         : `${Math.round(m / 1440)} d ago`;
 }
-// Staff panel: the account this kiosk works for and the headsets assigned to it.
+// Staff panel: the account this app works for and the headsets assigned to it.
 function renderAccount() {
   const c = account().context;
   $("accountBox").innerHTML = c
     ? `<div class="account-row"><img src="${esc(c.hospital?.logo_url || "assets/brand/mark.png")}" alt="" onerror="this.src='assets/brand/mark.png'"><span><strong>${esc(c.hospital?.name || "Hospital")}</strong><small>${esc(c.branch?.name || "All branches")} · signed in as ${esc(c.user?.full_name || c.user?.email || "staff")}</small></span></div>`
-    : "<p>This kiosk isn’t signed in.</p>";
+    : "<p>Not signed in.</p>";
+  if (account().notice)
+    $("accountBox").innerHTML += `<p class="signin-error">${esc(account().notice)} Visits stay saved on this device until then.</p>`;
 }
 function renderHeadsets() {
   renderAccount();
@@ -440,7 +442,7 @@ function renderHeadsets() {
             `<div class="headset-option"><span class="headset-dot ${h.online ? "on" : ""}"></span><span><strong>${esc(h.name)}</strong><small>${h.online ? "Online" : h.seen ? `Last seen ${ago(h.seen)}` : "Not seen yet"} · ${esc(h.deviceId)}${h.online && h.showing ? ` · showing ${esc(h.showing)}` : ""}</small></span>${h.online ? battery(h) : ""}</div>`,
         )
         .join("")
-    : '<p class="small-note">No headset is assigned to this kiosk yet. An administrator adds headsets for your hospital and branch in the admin portal; they appear here straight away.</p>';
+    : '<p class="small-note">No headset is assigned here yet. Your administrator adds headsets for your hospital and branch in the admin portal; they appear here straight away.</p>';
 }
 // Visitor headset step: online headsets plus an explicit "no headset" choice.
 function renderHeadsetChoices(force) {
@@ -479,7 +481,7 @@ function renderHeadsetChoices(force) {
         ? online.length
           ? ""
           : '<div class="headset-empty"><span class="scan" aria-hidden="true"></span><strong>Waiting for a headset…</strong><small>Switch on a headset and open Immersive Smile. It lights up here when it’s ready.</small></div>'
-        : '<div class="headset-empty"><strong>No headset set up yet</strong><small>Ask staff to add this kiosk’s headset in the admin portal. You can still watch on this screen.</small></div>') +
+        : '<div class="headset-empty"><strong>No headset set up yet</strong><small>Ask staff to set up a headset. You can still watch on this screen.</small></div>') +
       choice(
         "preview",
         screenIcon,
@@ -547,7 +549,7 @@ function leave(next) {
     });
 }
 function navigate(next, { replace = false, force = false } = {}) {
-  // A kiosk that isn't signed in to a hospital only shows the staff sign-in.
+  // Until staff sign in to a hospital, only the staff sign-in shows.
   if (!signedIn() && !session && page !== "feedback") next = "signin";
   if (busy && !["session", "feedback", "complete"].includes(next)) {
     toast("Please wait for the current action to finish.");
@@ -602,9 +604,7 @@ function render() {
   if (!signedIn() && !session && page !== "feedback" && page !== "complete") page = "signin";
   document.body.classList.toggle("signed-out", page === "signin");
   if (page === "signin") {
-    const reason = account().reason,
-      server = window.KioskAccount.defaultServer();
-    root.innerHTML = `<section class="signin content"><div class="signin-card"><img class="signin-logo" src="assets/brand/mark.png" alt="" width="72" height="72"><p class="eyebrow">STAFF SIGN-IN</p><h1>Sign in <em>this kiosk</em></h1><p>Use your hospital staff account. Visits recorded here go to your hospital’s dashboard, and the kiosk uses the VR headsets assigned to your branch.</p>${reason ? `<p class="signin-error">${esc(reason)}</p>` : ""}<form id="signinForm" autocomplete="on" novalidate><label>Email or username<input id="siUser" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required></label><label>Password<span class="password-field"><input id="siPass" name="password" type="password" autocomplete="current-password" required><button type="button" class="text-button" id="siShow" aria-label="Show password">Show</button></span></label><div class="signin-server" id="siServerSummary"${server ? "" : " hidden"}><span>Server</span><strong id="siServerLabel">${esc(server.replace(/^https?:\/\//, ""))}</strong><button type="button" class="text-button" id="siServerEdit">Change</button></div><label id="siServerRow"${server ? " hidden" : ""}>Server address<input id="siServer" inputmode="url" autocapitalize="none" spellcheck="false" placeholder="https://api.your-hospital.org" value="${esc(server)}"></label><p class="signin-error" id="siError" role="alert" hidden></p><button class="primary" id="siSubmit" type="submit">SIGN IN <span>→</span></button></form></div></section>`;
+    root.innerHTML = `<section class="signin content"><div class="signin-card"><img class="signin-logo" src="assets/brand/mark.png" alt="" width="72" height="72"><p class="eyebrow">STAFF SIGN-IN</p><h1>Welcome to <em>Immersive Smile</em></h1><p>Sign in with the staff account your administrator created for you. You only need to do this once on this device.</p><form id="signinForm" autocomplete="on" novalidate><label>Email or username<input id="siUser" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required></label><label>Password<span class="password-field"><input id="siPass" name="password" type="password" autocomplete="current-password" required><button type="button" class="text-button" id="siShow" aria-label="Show password">Show</button></span></label><p class="signin-error" id="siError" role="alert" hidden></p><button class="primary" id="siSubmit" type="submit">SIGN IN <span>→</span></button></form></div></section>`;
     const fail = (msg) => {
       $("siError").textContent = msg;
       $("siError").hidden = false;
@@ -614,23 +614,15 @@ function render() {
       $("siPass").type = show ? "text" : "password";
       $("siShow").textContent = show ? "Hide" : "Show";
     };
-    $("siServerEdit").onclick = () => {
-      $("siServerSummary").hidden = true;
-      $("siServerRow").hidden = false;
-      $("siServer").focus();
-    };
     $("signinForm").onsubmit = async (e) => {
       e.preventDefault();
       const identifier = $("siUser").value.trim(),
-        password = $("siPass").value,
-        apiBase = $("siServer").value.trim();
+        password = $("siPass").value;
       $("siError").hidden = true;
-      if (!apiBase) return fail("Enter the server address your administrator gave you.");
-      if (!/^https?:\/\/[^\s/]+/i.test(apiBase)) return fail("The server address should start with https://");
       if (!identifier || !password) return fail("Enter your email or username and your password.");
       $("siSubmit").disabled = true;
       $("siSubmit").innerHTML = "SIGNING IN…";
-      const r = await window.KioskAccount.signIn({ apiBase, identifier, password });
+      const r = await window.KioskAccount.signIn({ identifier, password });
       if (!r?.ok) {
         $("siSubmit").disabled = false;
         $("siSubmit").innerHTML = "SIGN IN <span>→</span>";
@@ -797,7 +789,7 @@ function render() {
     return;
   }
   if (page === "headset") {
-    root.innerHTML = `<section class="headset-page content"><div class="preview-nav"><button class="back" id="back">← About you</button><span class="eyebrow">STEP 3 OF 3 · YOUR HEADSET</span><span class="world-chip"><img src="${poster(selected)}" alt="">${esc(sceneLabel(selected).replace(/^.* · /, ""))}</span></div><div class="intake-head"><h1>Which headset <em>are you using?</em></h1><p>These are this kiosk’s headsets. Tap the one you’re wearing — a headset lights up when it’s switched on.</p></div><div class="headset-grid" id="headsetChoices" role="radiogroup" aria-label="VR headset"></div><div class="start-dock"><div><p class="eyebrow">STEP INSIDE</p><p id="headsetHint"></p></div><button class="primary" id="start" disabled>LET’S BEGIN <span>→</span></button></div></section>`;
+    root.innerHTML = `<section class="headset-page content"><div class="preview-nav"><button class="back" id="back">← About you</button><span class="eyebrow">STEP 3 OF 3 · YOUR HEADSET</span><span class="world-chip"><img src="${poster(selected)}" alt="">${esc(sceneLabel(selected).replace(/^.* · /, ""))}</span></div><div class="intake-head"><h1>Which headset <em>are you using?</em></h1><p>Tap the headset you’re wearing — a headset lights up when it’s switched on.</p></div><div class="headset-grid" id="headsetChoices" role="radiogroup" aria-label="VR headset"></div><div class="start-dock"><div><p class="eyebrow">STEP INSIDE</p><p id="headsetHint"></p></div><button class="primary" id="start" disabled>LET’S BEGIN <span>→</span></button></div></section>`;
     $("back").onclick = () => {
       if (navIndex > 0) history.back();
       else navigate("intake");
@@ -814,7 +806,7 @@ function render() {
     return;
   }
   if (page === "session") {
-    root.innerHTML = `<section class="content"><div class="session-title"><p class="eyebrow">${session.demo ? "KIOSK PREVIEW" : "YOUR EXPERIENCE"}</p><h1>${esc(selected.title)}</h1><p>${esc(guideFor(selected).summary)}</p></div><div id="sceneControls"></div>${session.demo ? "" : `<details class="ball-session"><summary>Staff · stress-ball defaults</summary><div id="ballSessionControls"></div></details>`}<div class="session-grid">${media(selected)}<aside class="interaction">${interactionGuide(selected)}</aside></div><p class="small-note" style="text-align:center">${esc(recordingNote(selected))}</p><div class="media-controls"><button id="playPreview">▷ Play preview</button><button id="pausePreview">Ⅱ Pause preview only</button><button id="audioToggle">${soundIcon} Enable preview sound</button></div><div class="status-list"><div class="status-row"><span>Experience</span><strong id="experienceStatus">${session.demo ? "Playing on this screen" : "Sending…"}</strong></div><div class="status-row"><span>Headset</span><strong id="headsetStatus">${session.demo ? "None — preview only" : "Checking…"}</strong></div><div class="status-row"><span>Elapsed</span><strong id="elapsed">00:00</strong></div></div><div class="actions"><button id="end" class="primary">End experience</button></div></section>`;
+    root.innerHTML = `<section class="content"><div class="session-title"><p class="eyebrow">${session.demo ? "PREVIEW" : "YOUR EXPERIENCE"}</p><h1>${esc(selected.title)}</h1><p>${esc(guideFor(selected).summary)}</p></div><div id="sceneControls"></div>${session.demo ? "" : `<details class="ball-session"><summary>Staff · stress-ball defaults</summary><div id="ballSessionControls"></div></details>`}<div class="session-grid">${media(selected)}<aside class="interaction">${interactionGuide(selected)}</aside></div><p class="small-note" style="text-align:center">${esc(recordingNote(selected))}</p><div class="media-controls"><button id="playPreview">▷ Play preview</button><button id="pausePreview">Ⅱ Pause preview only</button><button id="audioToggle">${soundIcon} Enable preview sound</button></div><div class="status-list"><div class="status-row"><span>Experience</span><strong id="experienceStatus">${session.demo ? "Playing on this screen" : "Sending…"}</strong></div><div class="status-row"><span>Headset</span><strong id="headsetStatus">${session.demo ? "None — preview only" : "Checking…"}</strong></div><div class="status-row"><span>Elapsed</span><strong id="elapsed">00:00</strong></div></div><div class="actions"><button id="end" class="primary">End experience</button></div></section>`;
     $("end").onclick = () => {
       $("stopDescription").textContent = session.demo
         ? "End this preview."
@@ -1219,7 +1211,7 @@ $("recordFile").onchange = async (e) => {
     tx.oncomplete = () => {
       if (uploadUrls.has(id)) URL.revokeObjectURL(uploadUrls.get(id));
       uploadUrls.set(id, url);
-      $("recordMessage").textContent = "Recording saved on this kiosk.";
+      $("recordMessage").textContent = "Recording saved on this device.";
       if (page === "detail" || page === "browse") render();
     };
     tx.onerror = () => {
@@ -1295,20 +1287,20 @@ async function refreshSync() {
       s.online === false ? "Offline · will upload when connected" : "",
       s.pending && s.lastError ? esc(s.lastError) : "",
       s.location ? `Location: ${esc(s.location)}` : "",
-      s.deviceId ? `Kiosk ID: ${esc(s.deviceId)}` : "",
+      s.deviceId ? `Device ID: ${esc(s.deviceId)}` : "",
     ]
       .filter(Boolean)
       .join("<br>");
   } catch (e) {
-    el.textContent = "Visits are saved on this kiosk.";
+    el.textContent = "Visits are saved on this device.";
   }
 }
 $("signOut").onclick = async () => {
   if (session) return toast("End the current experience first.");
   const s = await window.KioskData.status().catch(() => ({}));
   $("signOutNote").textContent = s.pending
-    ? `${s.pending} visit${s.pending === 1 ? " hasn’t" : "s haven’t"} uploaded yet. They stay on this kiosk and upload the next time this account signs in here.`
-    : "Visitors can’t use the kiosk until staff sign in again.";
+    ? `${s.pending} visit${s.pending === 1 ? " hasn’t" : "s haven’t"} uploaded yet. They stay on this device and upload the next time this account signs in here.`
+    : "Visitors can’t use the app until staff sign in again.";
   $("signOutDialog").showModal();
 };
 $("confirmSignOut").onclick = async () => {
@@ -1387,7 +1379,7 @@ setInterval(() => {
     navigate("browse", { force: true });
   }
 }, 10000);
-// Start once we know which hospital this kiosk is signed in to.
+// Start once we know which hospital this app is signed in to.
 let wasSignedIn = null;
 function onAccount(state) {
   mergeHeadsets();
@@ -1417,4 +1409,7 @@ function onAccount(state) {
   updateNav();
 }
 window.KioskAccount.onChange(onAccount);
-window.KioskAccount.ready.then(onAccount);
+window.KioskAccount.ready.then((state) => {
+  onAccount(state);
+  if (state.signedIn) window.KioskAccount.refresh(); // pick up headset changes made while the app was closed
+});

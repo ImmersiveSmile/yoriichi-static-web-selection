@@ -1,11 +1,21 @@
 'use strict';
-// Who this kiosk works for. Hospital staff sign the kiosk in once; from then on
-// it knows its hospital, branch and the VR headsets the admin portal assigned to
-// it, and every visit is uploaded to that hospital's dashboard.
+// Who this app works for. Hospital staff sign in once with the account an
+// administrator created for them in the admin portal; from then on the app
+// knows its hospital, branch and the VR headsets assigned to it, and every
+// visit goes to that hospital's dashboard.
+//
+// Sign-in, the hospital context and visit upload are Supabase functions
+// (db/12_connected_kiosk.sql: app_sign_in / app_context / app_record_visit /
+// app_sign_out) called with the public anon key — the same Supabase project
+// the admin portal uses, so there is no separate server to configure.
+//
+// A sign-in never times out: it lasts until staff press "Sign out". If the
+// account is later removed, the app keeps working, keeps visits queued and
+// tells staff in Settings to sign in again.
 //
 // In the iPad / Android app the native layer signs in, keeps the token in the
-// Keychain / app-private storage and makes every backend call (no CORS, no token
-// in JavaScript). In a plain browser this file does it with fetch + localStorage.
+// Keychain / app-private storage and uploads visits in the background. In a
+// plain browser this file does it with fetch + localStorage.
 window.KioskAccount = (() => {
   const cfg = window.KIOSK_CONFIG || {};
   const android = window.AndroidKiosk && {
@@ -23,100 +33,87 @@ window.KioskAccount = (() => {
   const read = () => { try { return JSON.parse(localStorage.getItem(STORE) || 'null') || {} } catch (e) { return {} } };
   const write = v => { try { localStorage.setItem(STORE, JSON.stringify(v)) } catch (e) {} };
   const post = m => { try { return Promise.resolve(bridge.postMessage(m)).catch(() => null) } catch (e) { return Promise.resolve(null) } };
-  const clean = url => String(url || '').trim().replace(/\/+$/, '').replace(/\/api$/, '');
   const listeners = new Set();
-  let state = { apiBase: '', signedIn: false, context: null, userId: null };
+  let state = { signedIn: false, context: null, userId: null, notice: null };
 
-  function nativeDefault() {
-    try {
-      return window.__IMMERSIVE_SMILE_NATIVE__?.apiBase || (window.AndroidKiosk?.config && JSON.parse(window.AndroidKiosk.config()).apiBase) || '';
-    } catch (e) { return '' }
-  }
   function set(next) {
     state = { ...state, ...next };
     listeners.forEach(fn => { try { fn(state) } catch (e) {} });
   }
-  function message(status, body) {
-    if (status === 0) return 'Can’t reach the server. Check the internet connection and the server address.';
-    if (status === 401) return body?.message || 'That email or password isn’t right.';
-    if (status === 403) return body?.message || 'This account can’t sign in a kiosk.';
-    if (status === 404) return 'The server address doesn’t look right.';
-    return body?.message || `The server returned an error (${status}).`;
-  }
-  async function request(path, { method = 'GET', body, token } = {}) {
-    const s = read();
-    const base = clean(s.apiBase || cfg.apiBase);
-    if (!base) return { ok: false, status: 0, error: 'Set the server address first.' };
+  const OFFLINE = 'Can’t connect right now. Check the internet connection and try again.';
+
+  // Browser mode: call a Supabase function with the public anon key.
+  async function rpc(name, args) {
+    if (!cfg.supabaseUrl || !cfg.supabaseAnonKey) return { ok: false, offline: true, error: OFFLINE };
     try {
-      const res = await fetch(base + path, {
-        method,
-        headers: { 'Content-Type': 'application/json', ...(token || s.token ? { Authorization: `Bearer ${token || s.token}` } : {}) },
-        body: body ? JSON.stringify(body) : undefined,
+      const res = await fetch(`${cfg.supabaseUrl.replace(/\/$/, '')}/rest/v1/rpc/${name}`, {
+        method: 'POST',
+        headers: { apikey: cfg.supabaseAnonKey, Authorization: `Bearer ${cfg.supabaseAnonKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(args),
         signal: AbortSignal.timeout?.(20000)
       });
       const data = await res.json().catch(() => null);
-      return res.ok ? { ok: true, status: res.status, data } : { ok: false, status: res.status, error: message(res.status, data) };
+      if (!res.ok) return { ok: false, offline: res.status >= 500, error: res.status === 404 ? 'Sign-in isn’t set up yet. Ask your administrator to finish the database update.' : OFFLINE };
+      return data || { ok: false, error: OFFLINE };
     } catch (e) {
-      return { ok: false, status: 0, error: message(0) };
+      return { ok: false, offline: true, error: OFFLINE };
     }
   }
 
   async function load() {
     if (bridge) {
       const r = (await post({ type: 'account' })) || {};
-      set({ apiBase: r.apiBase || nativeDefault(), signedIn: !!r.signedIn && !!r.context, context: r.context || null, userId: r.context?.user?.id || null });
+      set({ signedIn: !!r.signedIn && !!r.context, context: r.context || null, userId: r.context?.user?.id || null, notice: r.notice || null });
     } else {
       const s = read();
-      set({ apiBase: clean(s.apiBase || cfg.apiBase), signedIn: !!(s.token && s.context), context: s.context || null, userId: s.context?.user?.id || null });
+      set({ signedIn: !!(s.token && s.context), context: s.context || null, userId: s.context?.user?.id || null, notice: s.notice || null });
     }
     return state;
   }
 
-  async function signIn({ apiBase, identifier, password }) {
-    const base = clean(apiBase || state.apiBase);
+  async function signIn({ identifier, password }) {
     const device = { platform: bridge ? (android ? 'android-app' : 'ios-app') : 'web', model: navigator.userAgent.slice(0, 60) };
-    if (bridge) {
-      const r = (await post({ type: 'signIn', apiBase: base, identifier, password })) || { ok: false, error: message(0) };
-      if (r.ok) set({ apiBase: base, signedIn: true, context: r.context, userId: r.context?.user?.id || null });
-      return r;
+    let r;
+    if (bridge) r = (await post({ type: 'signIn', identifier, password })) || { ok: false, error: OFFLINE };
+    else {
+      r = await rpc('app_sign_in', { p_identifier: identifier, p_password: password, p_device: device });
+      if (r.ok) write({ token: r.token, context: r.context });
     }
-    write({ ...read(), apiBase: base });
-    const r = await request('/api/kiosk/login', { method: 'POST', body: { identifier, password, device } });
-    if (!r.ok) return r;
-    write({ apiBase: base, token: r.data.access_token, context: r.data.context });
-    set({ apiBase: base, signedIn: true, context: r.data.context, userId: r.data.context?.user?.id || null });
-    return { ok: true, context: r.data.context };
+    if (r.ok) set({ signedIn: true, context: r.context, userId: r.context?.user?.id || null, notice: null });
+    return r;
   }
 
   // Headsets can be added, renamed or moved in the admin portal at any time.
+  // Never signs out: a failed refresh keeps the last known hospital and headsets.
   async function refresh() {
     if (!state.signedIn) return state;
     let r;
-    if (bridge) r = (await post({ type: 'refreshContext' })) || { ok: false, status: 0 };
+    if (bridge) r = (await post({ type: 'refreshContext' })) || { ok: false, offline: true };
     else {
-      r = await request('/api/kiosk/context');
-      if (r.ok) { r.context = r.data; write({ ...read(), context: r.data }) }
+      r = await rpc('app_context', { p_token: read().token });
+      if (r.ok) write({ ...read(), context: r.context, notice: null });
+      else if (r.code === 'signed_out') write({ ...read(), notice: r.error });
     }
-    if (r.ok && r.context) set({ context: r.context, userId: r.context.user?.id || null });
-    else if (r.status === 401 || r.status === 403 || r.status === 404) {
-      // The account was removed, deactivated or its hospital switched off.
-      if (!bridge) write({ apiBase: read().apiBase });
-      set({ signedIn: false, context: null, userId: null, reason: `This kiosk was signed out: ${(r.error || 'please sign in again.').replace(/^./, c => c.toLowerCase())}` });
-    }
+    if (r.ok && r.context) set({ context: r.context, userId: r.context.user?.id || null, notice: null });
+    else if (r.code === 'signed_out') set({ notice: r.error || 'This sign-in was removed in the admin portal. Sign out and sign in again.' });
     return state;
   }
 
   async function signOut() {
     if (bridge) await post({ type: 'signOut' });
-    else write({ apiBase: read().apiBase });
-    set({ signedIn: false, context: null, userId: null, reason: null });
+    else {
+      const token = read().token;
+      write({});
+      if (token) rpc('app_sign_out', { p_token: token });
+    }
+    set({ signedIn: false, context: null, userId: null, notice: null });
   }
 
-  // Browser mode only: visit upload with the kiosk's token.
+  // Browser mode only: one visit to the hospital's dashboard.
   async function uploadVisit(row) {
-    if (bridge || !state.signedIn) return { ok: false, status: 0 };
-    const r = await request('/api/kiosk/visits', { method: 'POST', body: row });
-    if (r.status === 401 || r.status === 403) await refresh();
+    if (bridge || !state.signedIn) return { ok: false, offline: true };
+    const r = await rpc('app_record_visit', { p_token: read().token, p_visit: row });
+    if (r.code === 'signed_out') { write({ ...read(), notice: r.error }); set({ notice: r.error }) }
     return r;
   }
 
@@ -126,8 +123,7 @@ window.KioskAccount = (() => {
     ready,
     get state() { return state },
     onChange(fn) { listeners.add(fn); return () => listeners.delete(fn) },
-    signIn, signOut, refresh, uploadVisit,
-    defaultServer: () => clean(state.apiBase || cfg.apiBase || nativeDefault())
+    signIn, signOut, refresh, uploadVisit
   };
 })();
 
